@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Peek — Live Markdown Preview</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="src/style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+<body>
+  <!-- Splash Screen -->
+  <div id="splash" class="splash" aria-hidden="false">
+    <div class="splash-content">
+      <svg class="splash-logo" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Peek eye logo">
+        <path class="eye-outer" d="M32 8C18 8 6 20 6 32s12 24 26 24 26-12 26-24S46 8 32 8z" stroke="currentColor" stroke-width="2.5" fill="none" />
+        <ellipse class="eye-iris" cx="32" cy="32" rx="12" ry="12" stroke="currentColor" stroke-width="2.5" fill="none" />
+        <circle class="eye-pupil" cx="32" cy="32" r="5" fill="currentColor" />
+      </svg>
+      <h1 class="splash-title">Peek</h1>
+      <p class="splash-subtitle">«Live Markdown Preview»</p>
+    </div>
+  </div>
+
+  <!-- Main App -->
+  <div id="app" class="app" aria-hidden="true">
+    <!-- Header -->
+    <header class="header" role="banner">
+      <div class="header-left">
+        <svg class="header-logo" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M32 8C18 8 6 20 6 32s12 24 26 24 26-12 26-24S46 8 32 8z" stroke="currentColor" stroke-width="2.5" fill="none" />
+          <ellipse cx="32" cy="32" rx="12" ry="12" stroke="currentColor" stroke-width="2.5" fill="none" />
+          <circle cx="32" cy="32" r="5" fill="currentColor" />
+        </svg>
+        <span class="header-title">Peek</span>
+      </div>
+      <div class="header-right">
+        <button id="btn-copy" class="btn btn-ghost" aria-label="Copy Markdown to clipboard">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+          </svg>
+          <span class="btn-text">Copy Markdown</span>
+        </button>
+        <button id="btn-download" class="btn btn-ghost" aria-label="Download Markdown file">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+          <span class="btn-text">Download .md</span>
+        </button>
+        <button id="btn-theme" class="btn btn-ghost" aria-label="Toggle theme">
+          <svg id="icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="5"/>
+            <line x1="12" y1="1" x2="12" y2="3"/>
+            <line x1="12" y1="21" x2="12" y2="23"/>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+            <line x1="1" y1="12" x2="3" y2="12"/>
+            <line x1="21" y1="12" x2="23" y2="12"/>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+          </svg>
+          <svg id="icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:none">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main" role="main">
+      <!-- Editor Panel -->
+      <section class="panel panel-editor" aria-label="Markdown editor">
+        <div class="panel-header">
+          <span class="panel-label">Editor</span>
+          <span class="panel-meta" id="editor-meta">0 words · 0 chars</span>
+        </div>
+        <div class="panel-body">
+          <textarea
+            id="editor"
+            class="editor"
+            placeholder="Welcome to Peek
+
+Start writing Markdown..."
+            spellcheck="false"
+            aria-label="Markdown editor textarea"
+          ></textarea>
+        </div>
+      </section>
+
+      <!-- Resizer (desktop only) -->
+      <div class="resizer" id="resizer" aria-hidden="true"></div>
+
+      <!-- Preview Panel -->
+      <section class="panel panel-preview" aria-label="Live preview">
+        <div class="panel-header">
+          <span class="panel-label">Preview</span>
+          <span class="panel-meta" id="preview-meta">Ready</span>
+        </div>
+        <div class="panel-body">
+          <div id="preview" class="preview"></div>
+          <div id="empty-state" class="empty-state">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
+            <p>Your preview appears here.</p>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="toast" role="status" aria-live="polite" aria-hidden="true">
+    <span id="toast-message">Copied!</span>
+  </div>
+
+  <script type="module" src="src/main.ts"></script>
+</body>
+</html>
